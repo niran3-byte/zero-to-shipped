@@ -12,7 +12,13 @@ export async function connectDB(uri) {
   try {
     // Stop waiting after 5s instead of the 30s default, so a missing mongod
     // shows up as a fast, readable error rather than a hung startup.
-    await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
+    await mongoose.connect(uri, {
+      // On Vercel a cold instance cannot afford to wait long: if Atlas is paused
+      // or the IP is not allow-listed we want to fall through to the
+      // no-persistence path quickly, not hang the user's request. Locally the
+      // longer wait gives a readable startup error instead.
+      serverSelectionTimeoutMS: process.env.VERCEL ? 3000 : 5000,
+    });
     console.log(`[db] connected to ${mongoose.connection.name}`);
     return true;
   } catch (err) {
