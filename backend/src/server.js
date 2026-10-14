@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import analyzeRoutes from "./routes/analyze.js";
 import { connectDB } from "./config/db.js";
+import { notFound } from "./middleware/notFound.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/zero_to_shipped";
@@ -22,15 +24,11 @@ app.use(express.json({ limit: "1mb" }));
 // Health first, so `curl localhost:5000/api/health` answers even if the DB is down.
 app.use("/api", analyzeRoutes);
 
-// Multer rejects an oversized upload with this code; translate it into a message
-// the frontend can show rather than a bare 500.
-app.use((err, _req, res, _next) => {
-  console.error("[error]", err);
-  if (err.code === "LIMIT_FILE_SIZE") {
-    return res.status(413).json({ error: "That PDF is over 5 MB. Try a smaller export." });
-  }
-  res.status(500).json({ error: "Unexpected server error." });
-});
+// 404 for anything that matched no route...
+app.use(notFound);
+
+// ...and the one place an error becomes a response. Must be registered last.
+app.use(errorHandler);
 
 // Connecting is awaited but non-fatal on purpose: the API works without it.
 const dbUp = await connectDB(MONGODB_URI);

@@ -59,10 +59,15 @@ large) or 422 (PDF has no text layer).
 
 ```
 src/
-  server.js              # express app, CORS, error handling, listen
+  server.js              # express app, CORS, middleware order, listen
   config/db.js           # mongoose connection (non-fatal on failure)
   models/Analysis.js     # one row per analysis
-  routes/analyze.js      # POST /analyze — multer, orchestration
+  controllers/analyzeController.js  # request handling; throws ApiError
+  middleware/upload.js   # multer: PDF-only, 5 MB, memory storage
+  middleware/notFound.js # unmatched route -> 404 ApiError
+  middleware/errorHandler.js  # the single error -> response formatter
+  utils.js               # ApiError, isPdfFile
+  routes/analyze.js            # the API map: path -> middleware -> controller
   services/pdf.js        # Buffer -> text, via pdf-parse
   services/analyzer.js   # text -> score; the AI seam
 ```
