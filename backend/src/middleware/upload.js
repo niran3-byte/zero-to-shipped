@@ -10,7 +10,12 @@ import { isPdfFile } from "../utils.js";
 // (`uploadResume, analyzeResume`) rather than as configuration.
 export const uploadResume = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB, matching the frontend's check
+  // 4 MB, not 5: Vercel rejects a request body over 4.5 MB at the platform edge,
+  // before Express or multer runs — so a 5 MB limit would let a file pass both the
+  // browser check and multer, then fail with a platform 413 that our error handler
+  // never sees and cannot phrase. Keeping this under the platform cap means every
+  // "too large" path is one of ours, and reads as a real message.
+  limits: { fileSize: 4 * 1024 * 1024 },
   fileFilter(_req, file, cb) {
     // Pass a flag, not an Error: multer passes Errors through to the global
     // handler as 500s, but a wrong file type is the client's mistake — a 400,

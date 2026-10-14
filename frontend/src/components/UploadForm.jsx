@@ -4,12 +4,16 @@ import { useRef, useState } from "react";
 // validates the file, then hands { file, jobDescription } up to App, which is
 // where the single piece of "what is happening right now" state lives.
 
-const MAX_BYTES = 5 * 1024 * 1024;
+// 4 MB, not 5: the API runs on Vercel, which caps a request body at 4.5 MB before
+// it reaches the server. Checking against the same number the server enforces
+// means an oversized file is stopped here, with a clear message, instead of
+// dying at the platform edge as an unexplained failure.
+const MAX_BYTES = 4 * 1024 * 1024;
 
 function validate(file) {
   const looksLikePdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
   if (!looksLikePdf) return "That's not a PDF. Export your resume as a PDF and try again.";
-  if (file.size > MAX_BYTES) return "That file is over 5 MB. Try a smaller export.";
+  if (file.size > MAX_BYTES) return "That file is over 4 MB. Try a smaller export.";
   if (file.size === 0) return "That file is empty.";
   return null;
 }
@@ -95,7 +99,7 @@ export default function UploadForm({ onSubmit }) {
           {file ? file.name : "Drop your resume here"}
         </span>
         <span className="dropzone-sub">
-          {file ? "PDF selected — drop another to replace it" : "or browse — PDF only, up to 5 MB"}
+          {file ? "PDF selected — drop another to replace it" : "or browse — PDF only, up to 4 MB"}
         </span>
       </label>
 

@@ -1,19 +1,22 @@
 // The only place in the app that knows where the backend is.
 //
-// There are two deployments and the base URL differs between them:
+// One origin, two deployments:
 //
-//   Dev:        VITE_API_URL is unset, so the base is the relative "/api".
-//               Vite proxies that to localhost:5000 (see vite.config.js) and the
-//               browser only ever talks to :5173 — no cross-origin request at all.
-//   Production: VITE_API_URL is set to the backend project's URL, e.g.
-//               https://zero-to-shipped-api.vercel.app/api
-//               because the frontend is a separate Vercel project on a different
-//               origin, and no proxy sits between them.
+//   Dev:  the base is the relative "/api". Vite proxies that to localhost:5000
+//         (see vite.config.js), so the browser only ever talks to :5173.
+//   Prod: the base is still the relative "/api". Vercel services put the backend
+//         and the frontend on ONE domain, and the top-level rewrite sends
+//         /api/* to the backend service — so this is a same-origin request too.
 //
-// Vite replaces `import.meta.env.VITE_API_URL` at build time with a literal, so
-// this is a build-time decision, not a runtime one: change the variable in Vercel
-// and you must redeploy the frontend for it to take effect. Vite only exposes
-// variables prefixed with VITE_, which is why it is named that way.
+// That sameness is the point: because the path is relative in both places, there
+// is no hostname to configure and no CORS preflight, in dev or in production.
+// Nothing to set in the Vercel dashboard, and nothing that can drift when a
+// preview URL changes.
+//
+// VITE_API_URL exists only as an escape hatch — for pointing the app at a
+// backend on a different origin (a locally-run API while the frontend is
+// deployed, say). Vite inlines it at build time, so changing it needs a
+// redeploy, and it must carry the host: https://example.com/api
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
@@ -33,13 +36,11 @@ export async function analyzeResume(resume, jobDescription) {
   try {
     res = await fetch(`${API_BASE}/analyze`, { method: "POST", body });
   } catch {
-    // fetch only rejects when the request never got an answer — server down,
-    // DNS failure, no network. It also rejects when CORS blocks the response,
-    // which in production means the backend's CLIENT_ORIGIN does not list this
-    // site. A 4xx/5xx resolves normally and is handled below, which is a
-    // distinction worth keeping straight.
+    // fetch only rejects when no response arrived at all: server down, DNS
+    // failure, no network. A 4xx/5xx resolves normally and is handled below,
+    // which is a distinction worth keeping straight.
     throw new Error(
-      "Couldn't reach the server. Check that the API is running and that this site's URL is allowed by CORS."
+      "Couldn't reach the server. Check that the API is running, then try again."
     );
   }
 

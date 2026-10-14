@@ -19,7 +19,7 @@ export function errorHandler(err, _req, res, _next) {
 
   // Multer's own errors arrive here, not as ApiErrors — map the useful ones.
   if (err.code === "LIMIT_FILE_SIZE") {
-    return res.status(413).json({ error: "That PDF is over 5 MB. Try a smaller export." });
+    return res.status(413).json({ error: "That PDF is over 4 MB. Try a smaller export." });
   }
   if (err.code === "LIMIT_UNEXPECTED_FILE") {
     return res.status(400).json({ error: `Unexpected file field '${err.field}'.` });

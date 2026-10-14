@@ -1,0 +1,16 @@
+# Secrets. backend/.gitignore already covers this file, but a root-level rule
+# means `git add .` from the repo root cannot pick it up either.
+.env
+.env.*
+!.env.example
+
+# Build output and dependencies
+node_modules/
+dist/
+
+# Local Vercel state
+.vercel/
+
+# Logs
+npm-debug.log*
+*.log
