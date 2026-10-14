@@ -416,6 +416,48 @@ main {
   font-size: 0.85rem;
 }
 
+/* ── Upload form (resume + job description) ────────────────── */
+.upload-flow { display: grid; gap: 1.25rem; }
+
+.field { display: grid; gap: 0.5rem; }
+
+.field-label {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.jd-input {
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.jd-input::placeholder { color: var(--muted); }
+
+.jd-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(110, 231, 183, 0.05);
+}
+
+.upload-flow .btn { justify-self: start; }
+.upload-flow .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Failure state ─────────────────────────────────────────── */
+.failed { display: grid; gap: 1rem; justify-items: start; }
+.failed .error { margin-top: 0; }
+
+.empty-note { font-size: 0.88rem; }
+
 /* ── Reduced motion ────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
